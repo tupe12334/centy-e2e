@@ -49,10 +49,18 @@ describe('gRPC: Config Operations', () => {
   });
 
   describe('UpdateConfig', () => {
+    // Base config required by the daemon (allowedStates must not be empty)
+    const baseConfig = {
+      allowedStates: ['open', 'in-progress', 'closed'],
+      defaultState: 'open',
+      priorityLevels: 3,
+    };
+
     it('should update priority levels', async () => {
       const result = await project.client.updateConfig({
         projectPath: project.path,
         config: {
+          ...baseConfig,
           priorityLevels: 5,
         },
       });
@@ -67,6 +75,7 @@ describe('gRPC: Config Operations', () => {
       const result = await project.client.updateConfig({
         projectPath: project.path,
         config: {
+          ...baseConfig,
           allowedStates: newStates,
           defaultState: 'todo',
         },
@@ -80,6 +89,7 @@ describe('gRPC: Config Operations', () => {
       const result = await project.client.updateConfig({
         projectPath: project.path,
         config: {
+          ...baseConfig,
           stateColors: {
             open: '#00ff00',
             closed: '#ff0000',
@@ -95,6 +105,7 @@ describe('gRPC: Config Operations', () => {
       const result = await project.client.updateConfig({
         projectPath: project.path,
         config: {
+          ...baseConfig,
           priorityColors: {
             '1': '#ff0000',
             '2': '#ffff00',
@@ -111,6 +122,7 @@ describe('gRPC: Config Operations', () => {
       const result = await project.client.updateConfig({
         projectPath: project.path,
         config: {
+          ...baseConfig,
           llm: {
             autoCloseOnComplete: true,
             updateStatusOnStart: true,

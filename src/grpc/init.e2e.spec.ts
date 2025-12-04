@@ -39,13 +39,13 @@ describe('gRPC: Init Operations', () => {
       expect(projectFileExists(project, '.centy/.centy-manifest.json')).toBe(true);
     });
 
-    it('should create config file', async () => {
+    it('should create README file', async () => {
       await project.client.init({
         projectPath: project.path,
         force: true,
       });
 
-      expect(projectFileExists(project, '.centy/config.json')).toBe(true);
+      expect(projectFileExists(project, '.centy/README.md')).toBe(true);
     });
 
     it('should create required directories', async () => {

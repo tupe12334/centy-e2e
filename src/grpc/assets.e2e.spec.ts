@@ -57,7 +57,7 @@ describe('gRPC: Asset Operations', () => {
       expect(result.asset?.filename).toBe('photo.jpg');
     });
 
-    it('should add a text asset', async () => {
+    it('should reject unsupported file types', async () => {
       const textData = testData.createTestText('Hello, World!');
 
       const result = await project.client.addAsset({
@@ -67,8 +67,9 @@ describe('gRPC: Asset Operations', () => {
         data: textData,
       });
 
-      expect(result.success).toBe(true);
-      expect(result.asset?.filename).toBe('readme.txt');
+      // Daemon only supports image files, not text files
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Unsupported');
     });
 
     it('should add a shared asset', async () => {

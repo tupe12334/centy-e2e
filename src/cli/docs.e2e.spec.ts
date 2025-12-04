@@ -107,7 +107,8 @@ describe('CLI: Documentation Management', () => {
       });
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain('0');
+      // CLI shows "No docs found." when there are no docs
+      expect(stdout.toLowerCase()).toMatch(/(no docs|0)/i);
     });
 
     it('should list created docs', async () => {
@@ -208,10 +209,10 @@ describe('CLI: Documentation Management', () => {
         cwd: testDir,
         env: { CENTY_CWD: testDir },
       });
-      expect(listBefore.stdout).toContain('1');
+      expect(listBefore.stdout).toContain('to-delete');
 
-      // Delete it
-      const { exitCode } = await execa(CLI_PATH, ['delete', 'doc', 'to-delete'], {
+      // Delete it (use --force to skip confirmation)
+      const { exitCode } = await execa(CLI_PATH, ['delete', 'doc', 'to-delete', '--force'], {
         cwd: testDir,
         env: { CENTY_CWD: testDir },
       });
@@ -222,7 +223,7 @@ describe('CLI: Documentation Management', () => {
         cwd: testDir,
         env: { CENTY_CWD: testDir },
       });
-      expect(listAfter.stdout).toContain('0');
+      expect(listAfter.stdout).not.toContain('to-delete');
     });
   });
 });

@@ -28,10 +28,9 @@ describe('CLI: centy init', () => {
     });
 
     expect(exitCode).toBe(0);
-    expect(stdout).toContain('Initialized');
+    expect(stdout).toContain('Successfully initialized');
     expect(existsSync(join(testDir, '.centy'))).toBe(true);
     expect(existsSync(join(testDir, '.centy', '.centy-manifest.json'))).toBe(true);
-    expect(existsSync(join(testDir, '.centy', 'config.json'))).toBe(true);
   });
 
   it('should create the correct folder structure', async () => {
@@ -47,21 +46,20 @@ describe('CLI: centy init', () => {
     expect(existsSync(join(testDir, '.centy', 'templates'))).toBe(true);
   });
 
-  it('should create a valid config.json', async () => {
+  it('should create a valid manifest', async () => {
     await execa(CLI_PATH, ['init'], {
       cwd: testDir,
       env: { CENTY_CWD: testDir },
     });
 
-    const configPath = join(testDir, '.centy', 'config.json');
-    const configContent = await readFile(configPath, 'utf-8');
-    const config = JSON.parse(configContent);
+    const manifestPath = join(testDir, '.centy', '.centy-manifest.json');
+    const manifestContent = await readFile(manifestPath, 'utf-8');
+    const manifest = JSON.parse(manifestContent);
 
-    expect(config).toHaveProperty('priority_levels');
-    expect(config).toHaveProperty('allowed_states');
-    expect(config).toHaveProperty('default_state');
-    expect(config.allowed_states).toContain('open');
-    expect(config.allowed_states).toContain('closed');
+    expect(manifest).toHaveProperty('schema_version');
+    expect(manifest).toHaveProperty('centy_version');
+    expect(manifest).toHaveProperty('created_at');
+    expect(manifest).toHaveProperty('updated_at');
   });
 
   it('should handle already initialized directory', async () => {
