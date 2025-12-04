@@ -56,10 +56,11 @@ describe('CLI: centy init', () => {
     const manifestContent = await readFile(manifestPath, 'utf-8');
     const manifest = JSON.parse(manifestContent);
 
-    expect(manifest).toHaveProperty('schema_version');
-    expect(manifest).toHaveProperty('centy_version');
-    expect(manifest).toHaveProperty('created_at');
-    expect(manifest).toHaveProperty('updated_at');
+    // Manifest uses camelCase properties
+    expect(manifest).toHaveProperty('schemaVersion');
+    expect(manifest).toHaveProperty('centyVersion');
+    expect(manifest).toHaveProperty('createdAt');
+    expect(manifest).toHaveProperty('updatedAt');
   });
 
   it('should handle already initialized directory', async () => {

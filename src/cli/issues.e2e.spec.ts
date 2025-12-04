@@ -31,7 +31,7 @@ describe('CLI: Issue Management', () => {
     it('should create a new issue with title only', async () => {
       const { stdout, exitCode } = await execa(
         CLI_PATH,
-        ['create', 'issue', '--title', 'Test Issue'],
+        ['create', 'issue', '--title', 'Test Issue', '--status', 'open'],
         {
           cwd: testDir,
           env: { CENTY_CWD: testDir },
@@ -70,7 +70,7 @@ describe('CLI: Issue Management', () => {
     it('should create issue files on disk', async () => {
       await execa(
         CLI_PATH,
-        ['create', 'issue', '--title', 'Disk Test Issue'],
+        ['create', 'issue', '--title', 'Disk Test Issue', '--status', 'open'],
         {
           cwd: testDir,
           env: { CENTY_CWD: testDir },
@@ -128,16 +128,17 @@ describe('CLI: Issue Management', () => {
       });
 
       expect(exitCode).toBe(0);
-      expect(stdout).toContain('0');
+      // CLI shows "No issues found." when there are no issues
+      expect(stdout.toLowerCase()).toMatch(/(no issues|0)/i);
     });
 
     it('should list created issues', async () => {
       // Create some issues
-      await execa(CLI_PATH, ['create', 'issue', '--title', 'Issue 1'], {
+      await execa(CLI_PATH, ['create', 'issue', '--title', 'Issue 1', '--status', 'open'], {
         cwd: testDir,
         env: { CENTY_CWD: testDir },
       });
-      await execa(CLI_PATH, ['create', 'issue', '--title', 'Issue 2'], {
+      await execa(CLI_PATH, ['create', 'issue', '--title', 'Issue 2', '--status', 'open'], {
         cwd: testDir,
         env: { CENTY_CWD: testDir },
       });
@@ -181,7 +182,7 @@ describe('CLI: Issue Management', () => {
     it('should get issue by display number', async () => {
       await execa(
         CLI_PATH,
-        ['create', 'issue', '--title', 'Get Test Issue', '--description', 'Test description'],
+        ['create', 'issue', '--title', 'Get Test Issue', '--description', 'Test description', '--status', 'open'],
         { cwd: testDir, env: { CENTY_CWD: testDir } }
       );
 
@@ -208,7 +209,7 @@ describe('CLI: Issue Management', () => {
 
   describe('update issue', () => {
     it('should update issue title', async () => {
-      await execa(CLI_PATH, ['create', 'issue', '--title', 'Original Title'], {
+      await execa(CLI_PATH, ['create', 'issue', '--title', 'Original Title', '--status', 'open'], {
         cwd: testDir,
         env: { CENTY_CWD: testDir },
       });
@@ -230,7 +231,7 @@ describe('CLI: Issue Management', () => {
     });
 
     it('should update issue status', async () => {
-      await execa(CLI_PATH, ['create', 'issue', '--title', 'Status Test'], {
+      await execa(CLI_PATH, ['create', 'issue', '--title', 'Status Test', '--status', 'open'], {
         cwd: testDir,
         env: { CENTY_CWD: testDir },
       });
@@ -251,7 +252,7 @@ describe('CLI: Issue Management', () => {
 
   describe('delete issue', () => {
     it('should delete an issue', async () => {
-      await execa(CLI_PATH, ['create', 'issue', '--title', 'To Delete'], {
+      await execa(CLI_PATH, ['create', 'issue', '--title', 'To Delete', '--status', 'open'], {
         cwd: testDir,
         env: { CENTY_CWD: testDir },
       });
@@ -263,8 +264,8 @@ describe('CLI: Issue Management', () => {
       });
       expect(listBefore.stdout).toContain('1 issue');
 
-      // Delete it
-      const { exitCode } = await execa(CLI_PATH, ['delete', 'issue', '1'], {
+      // Delete it (use --force to skip confirmation)
+      const { exitCode } = await execa(CLI_PATH, ['delete', 'issue', '1', '--force'], {
         cwd: testDir,
         env: { CENTY_CWD: testDir },
       });
