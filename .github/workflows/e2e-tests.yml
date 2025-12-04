@@ -164,6 +164,9 @@ jobs:
       - name: Make daemon executable
         run: chmod +x centy-daemon/target/release/centy-daemon
 
+      - name: Make CLI executable
+        run: chmod +x centy-cli/bin/run.js
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
