@@ -1,0 +1,83 @@
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { execa } from 'execa';
+import { mkdir, rm, readFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { randomUUID } from 'node:crypto';
+
+const CLI_PATH = join(process.cwd(), '../centy-cli/bin/run.js');
+
+describe('CLI: centy init', () => {
+  let testDir: string;
+
+  beforeEach(async () => {
+    testDir = join(tmpdir(), `centy-cli-test-${randomUUID()}`);
+    await mkdir(testDir, { recursive: true });
+  });
+
+  afterEach(async () => {
+    await rm(testDir, { recursive: true, force: true });
+  });
+
+  it('should initialize a new .centy folder', async () => {
+    const { stdout, exitCode } = await execa(CLI_PATH, ['init'], {
+      cwd: testDir,
+      env: { CENTY_CWD: testDir },
+    });
+
+    expect(exitCode).toBe(0);
+    expect(stdout).toContain('Initialized');
+    expect(existsSync(join(testDir, '.centy'))).toBe(true);
+    expect(existsSync(join(testDir, '.centy', '.centy-manifest.json'))).toBe(true);
+    expect(existsSync(join(testDir, '.centy', 'config.json'))).toBe(true);
+  });
+
+  it('should create the correct folder structure', async () => {
+    await execa(CLI_PATH, ['init'], {
+      cwd: testDir,
+      env: { CENTY_CWD: testDir },
+    });
+
+    // Check all expected directories
+    expect(existsSync(join(testDir, '.centy', 'issues'))).toBe(true);
+    expect(existsSync(join(testDir, '.centy', 'docs'))).toBe(true);
+    expect(existsSync(join(testDir, '.centy', 'assets'))).toBe(true);
+    expect(existsSync(join(testDir, '.centy', 'templates'))).toBe(true);
+  });
+
+  it('should create a valid config.json', async () => {
+    await execa(CLI_PATH, ['init'], {
+      cwd: testDir,
+      env: { CENTY_CWD: testDir },
+    });
+
+    const configPath = join(testDir, '.centy', 'config.json');
+    const configContent = await readFile(configPath, 'utf-8');
+    const config = JSON.parse(configContent);
+
+    expect(config).toHaveProperty('priority_levels');
+    expect(config).toHaveProperty('allowed_states');
+    expect(config).toHaveProperty('default_state');
+    expect(config.allowed_states).toContain('open');
+    expect(config.allowed_states).toContain('closed');
+  });
+
+  it('should handle already initialized directory', async () => {
+    // Initialize first time
+    await execa(CLI_PATH, ['init'], {
+      cwd: testDir,
+      env: { CENTY_CWD: testDir },
+    });
+
+    // Try to initialize again
+    const { stdout, exitCode } = await execa(CLI_PATH, ['init'], {
+      cwd: testDir,
+      env: { CENTY_CWD: testDir },
+    });
+
+    expect(exitCode).toBe(0);
+    // Should handle gracefully (reconcile or report already initialized)
+    expect(existsSync(join(testDir, '.centy'))).toBe(true);
+  });
+});

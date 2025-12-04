@@ -1,0 +1,25 @@
+# E2E Test Runner for Playwright web tests
+FROM mcr.microsoft.com/playwright:v1.49.0-jammy
+
+# Install pnpm
+RUN npm install -g pnpm@10.24.0
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json pnpm-lock.yaml* ./
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Install Playwright browsers
+RUN pnpm exec playwright install --with-deps chromium firefox
+
+# Copy source files
+COPY . .
+
+# Create directories for results
+RUN mkdir -p /app/test-results /app/playwright-report
+
+# Default command
+CMD ["pnpm", "test:web"]

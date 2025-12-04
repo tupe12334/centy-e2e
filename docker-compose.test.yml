@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  # Centy Daemon - Rust gRPC server
+  daemon:
+    build:
+      context: ../centy-daemon
+      dockerfile: Dockerfile
+    ports:
+      - "50051:50051"
+    environment:
+      - CENTY_DAEMON_ADDR=0.0.0.0:50051
+      - RUST_LOG=info
+    volumes:
+      - daemon-data:/data
+    healthcheck:
+      test: ["CMD", "grpcurl", "-plaintext", "localhost:50051", "centy.CentyDaemon/GetDaemonInfo"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Centy App - React web application
+  app:
+    build:
+      context: ../centy-app
+      dockerfile: Dockerfile
+    ports:
+      - "5180:80"
+    environment:
+      - VITE_DAEMON_URL=http://daemon:50051
+    depends_on:
+      daemon:
+        condition: service_healthy
+
+  # E2E Tests Runner
+  e2e-cli:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    environment:
+      - CENTY_DAEMON_ADDR=daemon:50051
+      - CI=true
+    depends_on:
+      daemon:
+        condition: service_healthy
+    volumes:
+      - ./test-results:/app/test-results
+    command: pnpm test:cli
+
+  e2e-grpc:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    environment:
+      - CENTY_DAEMON_ADDR=daemon:50051
+      - CI=true
+    depends_on:
+      daemon:
+        condition: service_healthy
+    volumes:
+      - ./test-results:/app/test-results
+    command: pnpm test:grpc
+
+  e2e-web:
+    build:
+      context: .
+      dockerfile: Dockerfile.playwright
+    environment:
+      - CENTY_APP_URL=http://app:80
+      - CENTY_DAEMON_ADDR=daemon:50051
+      - CI=true
+    depends_on:
+      - app
+    volumes:
+      - ./test-results:/app/test-results
+      - ./playwright-report:/app/playwright-report
+    command: pnpm test:web
+
+volumes:
+  daemon-data:

@@ -1,0 +1,77 @@
+name: E2E Tests (Docker)
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_suite:
+        description: 'Test suite to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - grpc
+          - cli
+          - web
+
+env:
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+
+jobs:
+  test-docker:
+    name: E2E Tests in Docker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/centy-daemon
+          path: centy-daemon
+
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/centy-cli
+          path: centy-cli
+
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/centy-app
+          path: centy-app
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Run all tests
+        if: ${{ github.event.inputs.test_suite == 'all' }}
+        run: |
+          docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit e2e-cli
+          docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit e2e-grpc
+          docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit e2e-web
+
+      - name: Run gRPC tests
+        if: ${{ github.event.inputs.test_suite == 'grpc' }}
+        run: docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit e2e-grpc
+
+      - name: Run CLI tests
+        if: ${{ github.event.inputs.test_suite == 'cli' }}
+        run: docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit e2e-cli
+
+      - name: Run Web tests
+        if: ${{ github.event.inputs.test_suite == 'web' }}
+        run: docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit e2e-web
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: docker-test-results
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+
+      - name: Cleanup
+        if: always()
+        run: docker-compose -f docker-compose.test.yml down -v
