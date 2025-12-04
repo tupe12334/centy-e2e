@@ -31,7 +31,7 @@ describe('CLI: Issue Management', () => {
     it('should create a new issue with title only', async () => {
       const { stdout, exitCode } = await execa(
         CLI_PATH,
-        ['create', 'issue', '--title', 'Test Issue', '--status', 'open'],
+        ['create', 'issue', '--title', 'Test Issue', '--status', 'open', '--priority', 'medium'],
         {
           cwd: testDir,
           env: { CENTY_CWD: testDir },
@@ -70,7 +70,7 @@ describe('CLI: Issue Management', () => {
     it('should create issue files on disk', async () => {
       await execa(
         CLI_PATH,
-        ['create', 'issue', '--title', 'Disk Test Issue', '--status', 'open'],
+        ['create', 'issue', '--title', 'Disk Test Issue', '--status', 'open', '--priority', 'medium'],
         {
           cwd: testDir,
           env: { CENTY_CWD: testDir },
@@ -134,11 +134,11 @@ describe('CLI: Issue Management', () => {
 
     it('should list created issues', async () => {
       // Create some issues
-      await execa(CLI_PATH, ['create', 'issue', '--title', 'Issue 1', '--status', 'open'], {
+      await execa(CLI_PATH, ['create', 'issue', '--title', 'Issue 1', '--status', 'open', '--priority', 'medium'], {
         cwd: testDir,
         env: { CENTY_CWD: testDir },
       });
-      await execa(CLI_PATH, ['create', 'issue', '--title', 'Issue 2', '--status', 'open'], {
+      await execa(CLI_PATH, ['create', 'issue', '--title', 'Issue 2', '--status', 'open', '--priority', 'medium'], {
         cwd: testDir,
         env: { CENTY_CWD: testDir },
       });
@@ -157,12 +157,12 @@ describe('CLI: Issue Management', () => {
     it('should filter by status', async () => {
       await execa(
         CLI_PATH,
-        ['create', 'issue', '--title', 'Open Issue', '--status', 'open'],
+        ['create', 'issue', '--title', 'Open Issue', '--status', 'open', '--priority', 'medium'],
         { cwd: testDir, env: { CENTY_CWD: testDir } }
       );
       await execa(
         CLI_PATH,
-        ['create', 'issue', '--title', 'Closed Issue', '--status', 'closed'],
+        ['create', 'issue', '--title', 'Closed Issue', '--status', 'closed', '--priority', 'medium'],
         { cwd: testDir, env: { CENTY_CWD: testDir } }
       );
 
@@ -182,7 +182,7 @@ describe('CLI: Issue Management', () => {
     it('should get issue by display number', async () => {
       await execa(
         CLI_PATH,
-        ['create', 'issue', '--title', 'Get Test Issue', '--description', 'Test description', '--status', 'open'],
+        ['create', 'issue', '--title', 'Get Test Issue', '--description', 'Test description', '--status', 'open', '--priority', 'medium'],
         { cwd: testDir, env: { CENTY_CWD: testDir } }
       );
 
@@ -209,7 +209,7 @@ describe('CLI: Issue Management', () => {
 
   describe('update issue', () => {
     it('should update issue title', async () => {
-      await execa(CLI_PATH, ['create', 'issue', '--title', 'Original Title', '--status', 'open'], {
+      await execa(CLI_PATH, ['create', 'issue', '--title', 'Original Title', '--status', 'open', '--priority', 'medium'], {
         cwd: testDir,
         env: { CENTY_CWD: testDir },
       });
@@ -231,7 +231,7 @@ describe('CLI: Issue Management', () => {
     });
 
     it('should update issue status', async () => {
-      await execa(CLI_PATH, ['create', 'issue', '--title', 'Status Test', '--status', 'open'], {
+      await execa(CLI_PATH, ['create', 'issue', '--title', 'Status Test', '--status', 'open', '--priority', 'medium'], {
         cwd: testDir,
         env: { CENTY_CWD: testDir },
       });
@@ -252,7 +252,7 @@ describe('CLI: Issue Management', () => {
 
   describe('delete issue', () => {
     it('should delete an issue', async () => {
-      await execa(CLI_PATH, ['create', 'issue', '--title', 'To Delete', '--status', 'open'], {
+      await execa(CLI_PATH, ['create', 'issue', '--title', 'To Delete', '--status', 'open', '--priority', 'medium'], {
         cwd: testDir,
         env: { CENTY_CWD: testDir },
       });
