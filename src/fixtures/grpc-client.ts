@@ -1,12 +1,8 @@
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
-import { join } from 'node:path';
+import { getProtoPath } from './paths.js';
 
-// Proto file path
-const PROTO_PATH = join(
-  process.cwd(),
-  '../centy-daemon/proto/centy.proto'
-);
+const PROTO_PATH = getProtoPath();
 
 // Load proto definition
 const packageDefinition = protoLoader.loadSync(PROTO_PATH, {

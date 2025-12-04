@@ -5,8 +5,9 @@ import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { getCliPath } from '../fixtures/paths.js';
 
-const CLI_PATH = join(process.cwd(), '../centy-cli/bin/run.js');
+const CLI_PATH = getCliPath();
 
 describe('CLI: Documentation Management', () => {
   let testDir: string;
