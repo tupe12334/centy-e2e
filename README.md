@@ -1,14 +1,15 @@
 # Centy E2E Tests
 
-End-to-end testing suite for the Centy ecosystem, covering CLI, Web App, and gRPC daemon testing.
+End-to-end testing suite for the Centy ecosystem, covering CLI and Web App testing.
 
 ## Overview
 
 This package provides comprehensive E2E tests for:
 
 - **CLI Tests** - Test all centy-cli commands against a real daemon
-- **gRPC Tests** - Direct gRPC plain text testing of the daemon API
 - **Web App Tests** - Playwright browser tests for centy-app
+
+> **Note**: gRPC daemon tests have been moved to the `centy-daemon` repository. See `centy-daemon/e2e/` for direct daemon API testing.
 
 ## Prerequisites
 
@@ -25,22 +26,16 @@ pnpm install
 
 ## Running Tests
 
-### All Tests (CLI + gRPC)
+### All Tests (CLI + Web)
 
 ```bash
-pnpm test
+pnpm test:all
 ```
 
 ### CLI Tests Only
 
 ```bash
 pnpm test:cli
-```
-
-### gRPC Tests Only
-
-```bash
-pnpm test:grpc
 ```
 
 ### Web App Tests
@@ -56,37 +51,22 @@ pnpm test:web:ui
 pnpm test:web:headed
 ```
 
-### All Tests (including web)
-
-```bash
-pnpm test:all
-```
-
 ## Project Structure
 
 ```
 centy-e2e/
 ├── src/
 │   ├── fixtures/           # Test utilities and helpers
-│   │   ├── daemon-manager.ts   # Start/stop daemon instances
-│   │   ├── grpc-client.ts      # gRPC client for direct testing
-│   │   └── temp-project.ts     # Create temp test projects
+│   │   └── paths.ts            # CLI path resolution
 │   ├── cli/               # CLI E2E tests
 │   │   ├── init.e2e.spec.ts
 │   │   ├── issues.e2e.spec.ts
 │   │   └── docs.e2e.spec.ts
-│   ├── grpc/              # gRPC plain text tests
-│   │   ├── daemon.e2e.spec.ts
-│   │   ├── init.e2e.spec.ts
-│   │   ├── issues.e2e.spec.ts
-│   │   ├── docs.e2e.spec.ts
-│   │   ├── assets.e2e.spec.ts
-│   │   └── config.e2e.spec.ts
 │   └── web/               # Playwright web tests
 │       ├── issues.e2e.spec.ts
 │       ├── docs.e2e.spec.ts
 │       └── navigation.e2e.spec.ts
-├── vitest.config.ts       # Vitest config for CLI/gRPC tests
+├── vitest.config.ts       # Vitest config for CLI tests
 ├── playwright.config.ts   # Playwright config for web tests
 ├── docker-compose.test.yml # Docker setup for CI
 └── package.json
@@ -117,7 +97,6 @@ docker-compose -f docker-compose.test.yml up --build
 
 # Run specific test suite
 docker-compose -f docker-compose.test.yml up e2e-cli
-docker-compose -f docker-compose.test.yml up e2e-grpc
 docker-compose -f docker-compose.test.yml up e2e-web
 ```
 
@@ -127,9 +106,9 @@ docker-compose -f docker-compose.test.yml up e2e-web
 
 ```typescript
 import { execa } from 'execa';
-import { join } from 'node:path';
+import { getCliPath } from '../fixtures/paths.js';
 
-const CLI_PATH = join(process.cwd(), '../centy-cli/bin/run.js');
+const CLI_PATH = getCliPath();
 
 it('should create an issue', async () => {
   const { stdout, exitCode } = await execa(
@@ -138,24 +117,6 @@ it('should create an issue', async () => {
     { cwd: testDir, env: { CENTY_CWD: testDir } }
   );
   expect(exitCode).toBe(0);
-});
-```
-
-### gRPC Tests
-
-```typescript
-import { createTempProject } from '../fixtures/temp-project.js';
-
-it('should create an issue via gRPC', async () => {
-  const project = await createTempProject();
-
-  const result = await project.client.createIssue({
-    projectPath: project.path,
-    title: 'Test Issue',
-  });
-
-  expect(result.success).toBe(true);
-  await project.cleanup();
 });
 ```
 
@@ -169,36 +130,6 @@ test('should display issues list', async ({ page }) => {
   await page.click('text=Issues');
   await expect(page.locator('h1')).toContainText('Issues');
 });
-```
-
-## Test Fixtures
-
-### `createTempProject()`
-
-Creates an isolated temp directory with initialized `.centy` folder.
-
-```typescript
-const project = await createTempProject({
-  daemonAddress: '127.0.0.1:50051',
-  initialize: true,
-});
-
-// Use project.client for gRPC calls
-// Use project.path for file operations
-
-await project.cleanup(); // Clean up when done
-```
-
-### `testData`
-
-Factory functions for test data:
-
-```typescript
-testData.createTestPng()     // Minimal valid PNG
-testData.createTestJpeg()    // Minimal valid JPEG
-testData.createTestText()    // Text buffer
-testData.randomIssueTitle()  // Random issue title
-testData.randomDocTitle()    // Random doc title
 ```
 
 ## Troubleshooting

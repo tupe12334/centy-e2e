@@ -3,21 +3,18 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "description": "End-to-end tests for Centy CLI, Web App, and gRPC daemon",
+  "description": "End-to-end tests for Centy CLI and Web App",
   "scripts": {
     "test": "vitest run",
     "test:cli": "vitest run src/cli",
-    "test:grpc": "vitest run src/grpc",
     "test:web": "playwright test",
     "test:web:ui": "playwright test --ui",
     "test:web:headed": "playwright test --headed",
-    "test:all": "pnpm test:cli && pnpm test:grpc && pnpm test:web",
+    "test:all": "pnpm test:cli && pnpm test:web",
     "daemon:start": "cd ../centy-daemon && cargo run --release",
     "daemon:build": "cd ../centy-daemon && cargo build --release"
   },
   "devDependencies": {
-    "@grpc/grpc-js": "^1.12.2",
-    "@grpc/proto-loader": "^0.7.13",
     "@playwright/test": "^1.49.0",
     "@types/node": "^22.10.1",
     "execa": "^9.5.1",
